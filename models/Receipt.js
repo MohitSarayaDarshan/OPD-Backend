@@ -12,8 +12,8 @@ const ReceiptSchema = new mongoose.Schema({
   ReferenceNo: { type: String, maxLength: 250 },
   ReferenceDate: { type: Date },
   cancellationDateTime: { type: Date },
-  CancellationByUserID: { type: Number },
-  CancellationRemarks: { type: String, maxLength: 500 }
+  cancellationByUserID: { type: Number },
+  cancellationRemarks: { type: String, maxLength: 500 }
 }, { timestamps: { createdAt: 'Created', updatedAt: 'Modified' } });
 
 module.exports = mongoose.model('Receipt', ReceiptSchema);
