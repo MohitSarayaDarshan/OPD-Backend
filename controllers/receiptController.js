@@ -38,7 +38,7 @@ const getAllReceipts=async(req,res)=>{
 }
 const updateReceipt=async(req,res)=>{
     try{
-        const Receipt=await Receipt.findByOneAndUpdate({ReceiptID:req.params.id},req.body)
+        const Receipt=await Receipt.findOneAndUpdate({ReceiptID:req.params.id},req.body)
 
         res.status(201).json(Receipt)
     }
@@ -50,7 +50,7 @@ const updateReceipt=async(req,res)=>{
 
 const deleteReceipt=async(req,res)=>{
     try{
-        const Receipt=await Receipt.findByOneAndDelete({ReceiptID:req.params.id})
+        const Receipt=await Receipt.findOneAndDelete({ReceiptID:req.params.id})
 
         res.status(201).json(Receipt)
     }
