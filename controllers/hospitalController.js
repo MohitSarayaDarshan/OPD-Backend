@@ -15,7 +15,7 @@ const registerHospital=async(req,res)=>{
 
 const getHospitalById=async(req,res)=>{
     try{
-        const hospital=await Hospital.findById(req.params.id)
+        const hospital=await Hospital.find({HospitalID:req.params.id})
 
         res.status(201).json(hospital)
     }
@@ -38,7 +38,7 @@ const getAllHospitals=async(req,res)=>{
 }
 const updateHospital=async(req,res)=>{
     try{
-        const hospital=await Hospital.findByIdAndUpdate(req.params.id,req.body)
+        const hospital=await Hospital.findOneAndUpdate({HospitalID:req.params.id},req.body)
 
         res.status(201).json(hospital)
     }
@@ -50,7 +50,7 @@ const updateHospital=async(req,res)=>{
 
 const deleteHospital=async(req,res)=>{
     try{
-        const hospital=await Hospital.findByIdAndDelete(req.params.id)
+        const hospital=await Hospital.findOneAndDelete({HospitalID:req.params.id})
 
         res.status(201).json(hospital)
     }

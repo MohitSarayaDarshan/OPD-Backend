@@ -50,7 +50,7 @@ const updateOPD=async(req,res)=>{
 
 const deleteOPD=async(req,res)=>{
     try{
-        const OPD=await OPD.findOneAndDelete({OPDID:req.params,id})
+        const OPD=await OPD.findOneAndDelete({OPDID:req.params.id})
 
         res.status(201).json(OPD)
     }
