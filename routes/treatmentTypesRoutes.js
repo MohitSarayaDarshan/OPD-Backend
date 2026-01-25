@@ -1,18 +1,18 @@
 const express=require("express");
-const { getAllTreatments, getTreatmentById, registerTreatment, updateTreatment, deleteTreatment } = require("../controllers/treatmentTypesController");
+const {  getAllTreatmentTypes, getTreatmentTypeById, registerTreatmentType, updateTreatmentType, deleteTreatmentType } = require("../controllers/treatmentTypesController");
 const validate = require("../middlewares/validate");
 const registerSchema = require("../validations/treatmentTypesValidation");
 
 const router=express.Router();
 
-router.get('/',getAllTreatments)
+router.get('/',getAllTreatmentTypes)
 
-router.get('/:id',getTreatmentById)
+router.get('/:id',getTreatmentTypeById)
 
-router.post('/register',validate(registerSchema),registerTreatment)
+router.post('/register',validate(registerSchema),registerTreatmentType)
 
-router.put('/update/:id',validate(registerSchema),updateTreatment)
+router.put('/update/:id',validate(registerSchema),updateTreatmentType)
 
-router.delete('/delete/:id',deleteTreatment)
+router.delete('/delete/:id',deleteTreatmentType)
 
 module.exports=router

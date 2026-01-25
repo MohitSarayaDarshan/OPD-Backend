@@ -2,13 +2,16 @@ const Hospital = require("../models/Hospital")
 
 const registerHospital=async(req,res)=>{
     try{
-        const newHospital=await Hospital.insertOne(req.body)
+        // const newHospital=await Hospital.insertOne(req.body)
+        const newHospital=await Hospital(req.body)
 
-        res.status(201).json(newHospital)
+        const savedHospital=await newHospital.save()
+
+        return res.status(201).json(savedHospital)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).send({error:error.message})
     }
 }
 
@@ -21,7 +24,7 @@ const getHospitalById=async(req,res)=>{
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        res.status(400).json({error:error.message})
     }
 }
 

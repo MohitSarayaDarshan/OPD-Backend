@@ -1,18 +1,18 @@
 const express=require("express");
-const { getAllSubTreamentTypes, getSubTreamentTypeById, registerSubTreamentType, updateSubTreamentType, deleteSubTreamentType } = require("../controllers/subtreatmentTypesController");
+// const { getAllSubTreamentTypes, getSubTreamentTypeById, registerSubTreamentType, updateSubTreamentType, deleteSubTreamentType } = require("../controllers/subtreatmentTypesController");
 const validate = require("../middlewares/validate");
 const registerSchema = require("../validations/subTreatmentTypesValidation");
-
+const {getAllSubTreatmentTypes, getSubTreatmentTypeById, registerSubTreatmentType, updateSubTreatmentType, deleteSubTreatmentType}=require("../controllers/subtreatmentTypesController")
 const router=express.Router();
 
-router.get('/',getAllSubTreamentTypes)
+router.get("/",getAllSubTreatmentTypes)
 
-router.get('/:id',getSubTreamentTypeById)
+router.get("/:id",getSubTreatmentTypeById)
 
-router.post('/register',validate(registerSchema),registerSubTreamentType)
+router.post("/register",validate(registerSchema),registerSubTreatmentType)
 
-router.put('/update/:id',validate(registerSchema),updateSubTreamentType)
+router.put("/update/:id",validate(registerSchema),updateSubTreatmentType)
 
-router.delete('/delete/:id',deleteSubTreamentType)
+router.delete("/delete/:id",deleteSubTreatmentType)
 
 module.exports=router
