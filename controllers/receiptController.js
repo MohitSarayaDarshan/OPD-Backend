@@ -17,9 +17,9 @@ const registerReceipt=async(req,res)=>{
 
 const getReceiptById=async(req,res)=>{
     try{
-        const Receipt=await Receipt.find({ReceiptID:req.params.id})
+        const result=await Receipt.find({ReceiptID:req.params.id})
 
-        return res.status(201).json(Receipt)
+        return res.status(201).json(result)
     }
     catch(error)
     {
@@ -29,9 +29,9 @@ const getReceiptById=async(req,res)=>{
 
 const getAllReceipts=async(req,res)=>{
     try{
-        const Receipts=await Receipt.find({})
+        const result=await Receipt.find({})
 
-        return res.status(201).json(Receipts)
+        return res.status(201).json(result)
     }
     catch(error)
     {
@@ -40,9 +40,9 @@ const getAllReceipts=async(req,res)=>{
 }
 const updateReceipt=async(req,res)=>{
     try{
-        const Receipt=await Receipt.findOneAndUpdate({ReceiptID:req.params.id},req.body)
+        const result=await Receipt.findOneAndUpdate({ReceiptID:req.params.id},req.body)
 
-        return res.status(201).json(Receipt)
+        return res.status(201).json(result)
     }
     catch(error)
     {
@@ -52,9 +52,9 @@ const updateReceipt=async(req,res)=>{
 
 const deleteReceipt=async(req,res)=>{
     try{
-        const Receipt=await Receipt.findOneAndDelete({ReceiptID:req.params.id})
+        const result=await Receipt.findOneAndDelete({ReceiptID:req.params.id})
 
-        return res.status(201).json(Receipt)
+        return res.status(201).json(result)
     }
     catch(error)
     {
