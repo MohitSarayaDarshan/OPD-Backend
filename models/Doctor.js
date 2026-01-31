@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const DoctorSchema = new mongoose.Schema({
-  DoctorID: { type: Number, required: true, unique: true },
+  DoctorID: { type: Number, unique: true },
   DoctorName: { type: String, required: true, maxLength: 250 },
   StaffID: [{ type: Number }],
   StudentID: [{ type: Number }],
@@ -9,5 +9,20 @@ const DoctorSchema = new mongoose.Schema({
   Description: { type: String, maxLength: 250 },
   UserID: { type: Number, required: true }
 }, { timestamps: { createdAt: 'Created', updatedAt: 'Modified' } });
+
+DoctorSchema.pre('save',async function(){
+  if(!this.isNew) return;
+
+  try{
+    const counter=await Counter.findOneAndUpdate({id:'DoctorID'},{$inc:{seq:1}},{new:true,upsert:true})
+
+    this.DoctorID=counter.seq;
+    console.log(counter.seq);
+    
+  }
+  catch(error){
+    throw error;
+  }
+});
 
 module.exports = mongoose.model('Doctor', DoctorSchema);

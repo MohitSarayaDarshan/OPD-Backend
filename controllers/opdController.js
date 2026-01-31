@@ -2,61 +2,63 @@ const OPD = require("../models/OPD")
 
 const registerOPD=async(req,res)=>{
     try{
-        const newOPD=await OPD.insertOne(req.body)
-
-        res.status(201).json(newOPD)
+        const newOPD=await OPD(req.body)
+        
+        const savedOPD=await newOPD.save()
+        
+        return res.status(201).json(savedOPD)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 
 const getOPDById=async(req,res)=>{
     try{
-        const OPD=await OPD.find({OPDID:req.params.id})
+        const result=await OPD.find({OPDID:req.params.id})
 
-        res.status(201).json(OPD)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const getAllOPDs=async(req,res)=>{
     try{
-        const OPDs=await OPD.find({})
+        const result=await OPD.find({})
 
-        res.status(201).json(OPDs)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 const updateOPD=async(req,res)=>{
     try{
-        const OPD=await OPD.findOneAndUpdate({OPDID:req.params.id},req.body)
+        const result=await OPD.findOneAndUpdate({OPDID:req.params.id},req.body)
 
-        res.status(201).json(OPD)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const deleteOPD=async(req,res)=>{
     try{
-        const OPD=await OPD.findOneAndDelete({OPDID:req.params.id})
+        const result=await OPD.findOneAndDelete({OPDID:req.params.id})
 
-        res.status(201).json(OPD)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
  

@@ -11,7 +11,7 @@ const registerHospital=async(req,res)=>{
     }
     catch(error)
     {
-        return res.status(400).send({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
@@ -20,11 +20,11 @@ const getHospitalById=async(req,res)=>{
     try{
         const hospital=await Hospital.find({HospitalID:req.params.id})
 
-        res.status(201).json(hospital)
+        return res.status(201).json(hospital)
     }
     catch(error)
     {
-        res.status(400).json({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
@@ -32,22 +32,22 @@ const getAllHospitals=async(req,res)=>{
     try{
         const hospitals=await Hospital.find({})
 
-        res.status(201).json(hospitals)
+        return res.status(201).json(hospitals)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 const updateHospital=async(req,res)=>{
     try{
         const hospital=await Hospital.findOneAndUpdate({HospitalID:req.params.id},req.body)
 
-        res.status(201).json(hospital)
+        return res.status(201).json(hospital)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
@@ -55,11 +55,11 @@ const deleteHospital=async(req,res)=>{
     try{
         const hospital=await Hospital.findOneAndDelete({HospitalID:req.params.id})
 
-        res.status(201).json(hospital)
+        return res.status(201).json(hospital)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
  

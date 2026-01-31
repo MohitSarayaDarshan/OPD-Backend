@@ -2,13 +2,15 @@ const Receipt = require("../models/Receipt")
 
 const registerReceipt=async(req,res)=>{
     try{
-        const newReceipt=await Receipt.insertOne(req.body)
-
-        res.status(201).json(newReceipt)
+        const newReceipt=await Receipt(req.body)
+        
+        const savedReceipt=await newReceipt.save()
+        
+        return res.status(201).json(savedReceipt)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
@@ -17,11 +19,11 @@ const getReceiptById=async(req,res)=>{
     try{
         const Receipt=await Receipt.find({ReceiptID:req.params.id})
 
-        res.status(201).json(Receipt)
+        return res.status(201).json(Receipt)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
@@ -29,22 +31,22 @@ const getAllReceipts=async(req,res)=>{
     try{
         const Receipts=await Receipt.find({})
 
-        res.status(201).json(Receipts)
+        return res.status(201).json(Receipts)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 const updateReceipt=async(req,res)=>{
     try{
         const Receipt=await Receipt.findOneAndUpdate({ReceiptID:req.params.id},req.body)
 
-        res.status(201).json(Receipt)
+        return res.status(201).json(Receipt)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
@@ -52,11 +54,11 @@ const deleteReceipt=async(req,res)=>{
     try{
         const Receipt=await Receipt.findOneAndDelete({ReceiptID:req.params.id})
 
-        res.status(201).json(Receipt)
+        return res.status(201).json(Receipt)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
  

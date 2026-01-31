@@ -2,62 +2,64 @@ const Doctor=require('../models/Doctor')
 
 const registerDoctor=async(req,res)=>{
     try{
-        const doctor=await Doctor.insertOne(req.body)
-
-        res.status(201).json(doctor)
+        const newDoctor=await Hospital(req.body)
+        
+        const savedDoctor=await newDoctor.save()
+        
+        return res.status(201).json(savedDoctor)
     }
     catch(error)
     {
-        console.error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const getAllDoctors=async(req,res)=>{
     try{
 
-        const doctors=await Doctor.find({})
+        const result=await Doctor.find({})
         
-        res.status(201).json(doctors)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        console.error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const getDoctorById=async(req,res)=>{
     try{
-        const doctor=await Doctor.find({DoctorID:req.params.id})
+        const result=await Doctor.find({DoctorID:req.params.id})
 
-        res.status(201).json(doctor)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        console.error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const updateDoctor=async(req,res)=>{
     try{
-        const doctor=await Doctor.findOneAndUpdate({DoctorID:req.params.id},req.body)
+        const result=await Doctor.findOneAndUpdate({DoctorID:req.params.id},req.body)
 
-        res.status(201).json(doctor)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        console.error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const deleteDoctor=async(req,res)=>{
     try{
-        const doctor=await Doctor.findOneAndDelete({DoctorId:req.params.id})
+        const result=await Doctor.findOneAndDelete({DoctorId:req.params.id})
 
-        res.status(201).json(doctor)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        console.error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 

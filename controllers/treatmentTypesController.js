@@ -2,64 +2,66 @@ const  TreatmentType= require("../models/TreatmentTypes")
 
 const registerTreatmentType=async(req,res)=>{
     try{
-        const newTreatmentType=await TreatmentType.insertOne(req.body)
-
-        res.status(201).json(newTreatmentType)
+        const newTreatmentType=await TreatmentType(req.body)
+        
+        const savedTreatmentType=await newTreatmentType.save()
+        
+        return res.status(201).json(savedTreatmentType)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 
 const getTreatmentTypeById=async(req,res)=>{
     try{
-        const TreatmentType=await TreatmentType.find({TreatmentTypeID:req.params.id})
+        const result=await TreatmentType.find({TreatmentTypeID:req.params.id})
 
-        res.status(201).json(TreatmentType)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const getAllTreatmentTypes=async(req,res)=>{
     try{
-        const TreatmentTypes=await TreatmentType.find({})
+        const result=await TreatmentType.find({})
 
-        res.status(201).json(TreatmentTypes)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 const updateTreatmentType=async(req,res)=>{
     try{
-        const TreatmentType=await TreatmentType.findOneAndUpdate({TreatmentTypeID:req.params.id},req.body)
+        const result=await TreatmentType.findOneAndUpdate({TreatmentTypeID:req.params.id},req.body)
 
-        res.status(201).json(TreatmentType)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const deleteTreatmentType=async(req,res)=>{
     try{
-        const TreatmentType=await TreatmentType.findOneAndDelete({TreatmentTypeID:req.params.id})
+        const result=await TreatmentType.findOneAndDelete({TreatmentTypeID:req.params.id})
 
-        res.status(201).json(TreatmentType)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
- 
+
 
 
 module.exports={registerTreatmentType,getTreatmentTypeById,getAllTreatmentTypes,updateTreatmentType,deleteTreatmentType}

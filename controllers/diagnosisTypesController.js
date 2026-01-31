@@ -2,61 +2,63 @@ const DiagnosisTypes=require("../models/DiagnosisTypes")
 
 const getAllDiagnosisTypes=async(req,res)=>{
     try{
-        const data=await DiagnosisTypes.find({})
+        const result=await DiagnosisTypes.find({})
 
-        res.status(201).json(data)
+        return res.status(201).json(result)
     }
     catch(error){
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const getDiagnosisTypeById=async(req,res)=>{
     try{
-        const data=await DiagnosisTypes.find({DiagnosisTypeID:req.params.id})
+        const result=await DiagnosisTypes.find({DiagnosisTypeID:req.params.id})
 
-        res.status(201).json(data)
+        return res.status(201).json(result)
     }
     catch(error){
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 const registerDiagnosisType=async(req,res)=>{
     try{
-        const data=await DiagnosisTypes.insertOne(req.body)
-
-        res.status(201).json(data)
+        const newDiagnosisType=await DiagnosisTypes(req.body)
+       
+        const savedDiagnosisType=await newDiagnosisType.save()
+       
+        return res.status(201).json(savedDiagnosisType)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 
 const updateDiagnosisType=async(req,res)=>{
     try{
-        const data=await DiagnosisTypes.findOneAndUpdate({DiagnosisTypeID:req.params.id},req.body)
+        const result=await DiagnosisTypes.findOneAndUpdate({DiagnosisTypeID:req.params.id},req.body)
 
-        res.status(201).json(data)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
 
 const deleteDiagnosisType=async(req,res)=>{
     try{
-        const data=await DiagnosisTypes.findOneAndDelete({DiagnosisTypeID:req.params.id})
+        const result=await DiagnosisTypes.findOneAndDelete({DiagnosisTypeID:req.params.id})
 
-        res.status(201).json(data)
+        return res.status(201).json(result)
     }
     catch(error)
     {
-        res.status(400).error({error:error.message})
+        return res.status(400).json({error:error.message})
     }
 }
 
