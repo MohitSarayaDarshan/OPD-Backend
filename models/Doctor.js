@@ -7,7 +7,8 @@ const DoctorSchema = new mongoose.Schema({
   StudentID: [{ type: Number }],
   HospitalID: { type: Number, required: true, ref: 'Hospital' },
   Description: { type: String, maxLength: 250 },
-  UserID: { type: Number, required: true }
+  UserID: { type: Number, required: true },
+  Image:{type:String}
 }, { timestamps: { createdAt: 'Created', updatedAt: 'Modified' } });
 
 DoctorSchema.pre('save',async function(){

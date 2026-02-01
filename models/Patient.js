@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
+const {customAlphabet}=require('nanoid')
+const Counter=require("./Counter")
+
+const generateHash=customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',8)
 
 const PatientSchema = new mongoose.Schema({
-  PatientID: { type: Number, unique: true },
-  PatientName: { type: String, required: true, maxLength: 250 },
-  PatientNo: { type: Number, required: true },
+  PatientID: { type: Number },
+  PatientName: { type: String, maxLength: 250 },
+  PatientNo: { type: String },
   RegistrationDateTime: { type: Date, required: true },
   Age: { type: Number },
   BloodGroup: { type: String, maxLength: 20 },
@@ -29,11 +33,17 @@ PatientSchema.pre('save',async function(){
 
     this.PatientID=counter.seq;
     console.log(counter.seq);
+
+    const hash=generateHash();
+
+    this.PatientNo=`PAT-${hash.substring(0,4)}-${hash.substring(4,8)}`
     
   }
   catch(error){
     throw error;
   }
+
+  
 });
 
 

@@ -8,7 +8,8 @@ const registerSchema=Joi.object({
     StudentID: Joi.array().items(Joi.number().integer().positive().required()),
     HospitalID: Joi.number().integer().positive().required(),
     Description: Joi.string().min(3).max(250),
-    UserID: Joi.number().integer().positive().required()
+    UserID: Joi.number().integer().positive().required(),
+    Image:Joi.string()
 })
 
 module.exports=registerSchema
