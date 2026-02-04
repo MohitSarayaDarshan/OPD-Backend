@@ -1,12 +1,12 @@
-const Doctor=require('../models/Doctor')
+const Staff=require('../models/Staff')
 
-const registerDoctor=async(req,res)=>{
+const registerStaff=async(req,res)=>{
     try{
-        const newDoctor=await Doctor(req.body)
+        const newStaff=await Staff(req.body)
         
-        const savedDoctor=await newDoctor.save()
+        const savedStaff=await newStaff.save()
         
-        return res.status(201).json(savedDoctor)
+        return res.status(201).json(savedStaff)
     }
     catch(error)
     {
@@ -14,10 +14,10 @@ const registerDoctor=async(req,res)=>{
     }
 }
 
-const getAllDoctors=async(req,res)=>{
+const getAllStaffs=async(req,res)=>{
     try{
 
-        const result=await Doctor.find({})
+        const result=await Staff.find({})
         
         return res.status(201).json(result)
     }
@@ -27,9 +27,9 @@ const getAllDoctors=async(req,res)=>{
     }
 }
 
-const getDoctorById=async(req,res)=>{
+const getStaffById=async(req,res)=>{
     try{
-        const result=await Doctor.find({DoctorID:req.params.id})
+        const result=await Staff.find({StaffID:req.params.id})
 
         return res.status(201).json(result)
     }
@@ -39,9 +39,9 @@ const getDoctorById=async(req,res)=>{
     }
 }
 
-const updateDoctor=async(req,res)=>{
+const updateStaff=async(req,res)=>{
     try{
-        const result=await Doctor.findOneAndUpdate({DoctorID:req.params.id},req.body)
+        const result=await Staff.findOneAndUpdate({StaffID:req.params.id},req.body)
 
         return res.status(201).json(result)
     }
@@ -51,9 +51,9 @@ const updateDoctor=async(req,res)=>{
     }
 }
 
-const deleteDoctor=async(req,res)=>{
+const deleteStaff=async(req,res)=>{
     try{
-        const result=await Doctor.findOneAndDelete({DoctorID:req.params.id})
+        const result=await Staff.findOneAndDelete({StaffID:req.params.id})
 
         return res.status(201).json(result)
     }
@@ -64,4 +64,4 @@ const deleteDoctor=async(req,res)=>{
 }
 
 
-module.exports={registerDoctor,getAllDoctors,getDoctorById,updateDoctor,deleteDoctor}
+module.exports={registerStaff,getAllStaffs,getStaffById,updateStaff,deleteStaff}

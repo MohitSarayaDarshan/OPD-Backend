@@ -11,6 +11,7 @@ const patientRoutes=require("./routes/patientRoutes")
 const receiptRoutes=require("./routes/receiptRoutes")
 const subtreatmentTypesRoutes=require("./routes/subTreamentTypesRoutes")
 const treatmentTypesRoutes=require("./routes/treatmentTypesRoutes")
+const staffRoutes=require('./routes/staffRoutes')
 const cors=require("cors")
 const connectDB = require("./config/db")
 
@@ -41,6 +42,8 @@ app.use('/api/receipts',receiptRoutes)
 app.use('/api/subtreatments',subtreatmentTypesRoutes)
 
 app.use('/api/treatments',treatmentTypesRoutes)
+
+app.use('/api/staffs',staffRoutes)
 
 const PORT=process.env.PORT
 
