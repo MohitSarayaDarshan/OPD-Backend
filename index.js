@@ -1,5 +1,7 @@
 const express=require("express")
 const dotenv=require("dotenv")
+const cookieParser=require('cookie-parser')
+const {protect}=require('./middlewares/authMiddleware')
 
 
 const hospitalRoutes=require("./routes/hospitalRoutes")
@@ -12,6 +14,7 @@ const receiptRoutes=require("./routes/receiptRoutes")
 const subtreatmentTypesRoutes=require("./routes/subTreamentTypesRoutes")
 const treatmentTypesRoutes=require("./routes/treatmentTypesRoutes")
 const staffRoutes=require('./routes/staffRoutes')
+const userRoutes=require('./routes/userRoutes')
 const cors=require("cors")
 const connectDB = require("./config/db")
 
@@ -23,7 +26,12 @@ connectDB();
 
 app.use(cors())
 
+app.use(cookieParser())
+
 app.use(express.json())
+
+app.use('/api',userRoutes)
+app.use(protect);
 
 app.use('/api/hospitals',hospitalRoutes)
 
