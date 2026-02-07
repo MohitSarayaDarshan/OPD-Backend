@@ -7,9 +7,9 @@ const signupUser = async (req, res) => {
 
         const savedUser = await newUser.save();
 
-        res.status(201).send(savedUser);
+        return res.status(201).json(savedUser);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 };
 
@@ -35,14 +35,15 @@ const loginUser = async (req, res) => {
                 maxAge: 24 * 60 * 60 * 1000, // 1 day
             });
 
-            res.status(200).json({ message: "Login Successful", data: user });
+            return res.status(200).json({ message: "Login Successful", data: user });
         }
         else
         {
-            res.status(401).json({ message: "Invalid email or password" });
+            // console.log("invalid email or password")
+            return res.status(401).json({ message: "Invalid email or password" });
         }
     } else {
-        res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Invalid email or password" });
     }
 };
 
@@ -51,7 +52,7 @@ const logoutUser = (req, res) => {
         httpOnly: true,
         expires: new Date(0), // Expire the cookie immediately
     });
-    res.status(200).json({ message: "Logged out successfully" });
+    return res.status(200).json({ message: "Logged out successfully" });
 };
 
 module.exports = { signupUser, loginUser, logoutUser };
