@@ -1,7 +1,7 @@
 const express=require("express")
 const dotenv=require("dotenv")
 const cookieParser=require('cookie-parser')
-const {protect}=require('./middlewares/authMiddleware')
+const {protect, authorize}=require('./middlewares/authMiddleware')
 
 
 const hospitalRoutes=require("./routes/hospitalRoutes")
@@ -24,16 +24,22 @@ const app=express()
 
 connectDB();
 
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true                // Allows cookies to be accepted
+}))
 
 app.use(cookieParser())
 
 app.use(express.json())
 
 app.use('/api',userRoutes)
+
 app.use(protect);
 
-app.use('/api/hospitals',hospitalRoutes)
+
+
+app.use('/api/hospitals',authorize('admin'), hospitalRoutes)
 
 app.use('/api/doctors',doctorRoutes)
 

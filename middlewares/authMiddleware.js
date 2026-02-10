@@ -2,10 +2,9 @@ const jwt=require("jsonwebtoken")
 const User=require("../models/User")
 
 const protect=async(req,res,next)=>{
-    // const token=req.headers.authorization.split(' ')[1];
-    let token;
+    // const token=req.headers.authorization.split(' ')[1]
 
-    token=req.cookies.token;
+    const token=req.cookies.token;
 
     console.log(token);
     // console.log(process.env.JWT_SECRET)
@@ -13,9 +12,9 @@ const protect=async(req,res,next)=>{
 
     try{
         const decoded=await jwt.verify(token,process.env.JWT_SECRET);
-        console.log(decoded)
-
-        req.user = await User.find({UserID:decoded.UserID}).select("-Password")
+        
+        req.user = (await User.find({UserID:decoded.UserID}).select("-Password"))[0]
+        console.log(req.user)
         next();
     }
     catch(error)

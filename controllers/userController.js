@@ -14,11 +14,11 @@ const signupUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    const { Email, Password } = req.body;
+    const { Email, Password, Role } = req.body;
 
-    const user = await User.find({ Email: Email });
+    const user = await User.find({ Email: Email, Role:Role });
     console.log(user);
-    if (user) {
+    if (user && user.length>0) {
         const match = await bcrypt.compare(Password, user[0].Password);
 
         if (match) {
@@ -35,7 +35,7 @@ const loginUser = async (req, res) => {
                 maxAge: 24 * 60 * 60 * 1000, // 1 day
             });
 
-            return res.status(200).json({ message: "Login Successful", data: user });
+            return res.status(201).json({ message: "Login Successful", data: user });
         }
         else
         {
@@ -48,11 +48,44 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = (req, res) => {
-    res.cookie("token", "", {
-        httpOnly: true,
-        expires: new Date(0), // Expire the cookie immediately
-    });
-    return res.status(200).json({ message: "Logged out successfully" });
+    res.clearCookie('token')
+    return res.status(201).json({ message: "Logged out successfully" });
 };
 
-module.exports = { signupUser, loginUser, logoutUser };
+const handleMe=async(req,res)=>{
+    const token=req.cookies.token
+    console.log(token);
+    if(!token)
+    {
+        return res.status(401).json({
+            authenticated:false,
+            message:"No session found"
+        })
+    }
+
+     try{
+            const decoded=await jwt.verify(token,process.env.JWT_SECRET);
+            console.log(decoded)
+    
+            const user = await User.find({UserID:decoded.UserID}).select("-Password")
+    
+            console.log(user)
+            if(!user){
+                return res.status(404).json({message:"User no longer exists"})
+            }
+    
+            return res.status(200).json({
+                authenticated:true,
+                data:user
+            })
+        }
+        catch(error)
+        {
+            return res.status(403).json({ 
+            authenticated: false, 
+            message: "Session expired or invalid" 
+                });
+            }
+}
+
+module.exports = { signupUser, loginUser, logoutUser,handleMe };
