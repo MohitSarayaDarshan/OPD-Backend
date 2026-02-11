@@ -84,7 +84,7 @@ const handleMe=async(req,res)=>{
             return res.status(403).json({ 
             authenticated: false, 
             message: "Session expired or invalid" 
-                });
+            });
             }
 }
 
