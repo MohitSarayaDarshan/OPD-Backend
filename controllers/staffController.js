@@ -39,6 +39,17 @@ const getStaffById=async(req,res)=>{
     }
 }
 
+const getStaffByEmail=async(req,res)=>{
+    try{
+        const result=await Staff.find({Email:req.body.Email})
+
+        return res.status(201).json(result)
+    }
+    catch(error){
+        return res.status(400).json({error:error.message})
+    }
+}
+
 const updateStaff=async(req,res)=>{
     try{
         const result=await Staff.findOneAndUpdate({StaffID:req.params.id},req.body)
@@ -64,4 +75,4 @@ const deleteStaff=async(req,res)=>{
 }
 
 
-module.exports={registerStaff,getAllStaffs,getStaffById,updateStaff,deleteStaff}
+module.exports={registerStaff,getAllStaffs,getStaffById,getStaffByEmail,updateStaff,deleteStaff}

@@ -4,6 +4,7 @@ const { description } = require('../validations/hospitalValidation')
 
 const StaffSchema=new mongoose.Schema({
     StaffID:{type:Number,unique:true},
+    Email:{type:String,unique:true},
     StaffName:{type:String,required:true,maxLength:250},
     HospitalID:{type:Number,required:true,ref:'Hospital'},
     UserID:{type:Number,required:true},

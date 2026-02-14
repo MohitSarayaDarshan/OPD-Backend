@@ -24,6 +24,18 @@ const getPatientById=async(req,res)=>{
     }
 }
 
+const getPatientByEmail=async(req,res)=>{
+    console.log(req.body)
+    try{
+        const result=await Patient.find({Email:req.body.Email})
+
+        return res.status(201).json(result)
+    }
+    catch(error){
+        return res.status(400).json({error:error.message})
+    }
+}
+
 
 const registerPatient=async(req,res)=>{
     try{
@@ -66,4 +78,4 @@ const deletePatient=async(req,res)=>{
 }
 
 
-module.exports={getAllPatients,getPatientById,registerPatient,updatePatient,deletePatient}
+module.exports={getAllPatients,getPatientById,registerPatient,getPatientByEmail,updatePatient,deletePatient}
