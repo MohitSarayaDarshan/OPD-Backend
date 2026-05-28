@@ -31,12 +31,7 @@ dotenv.config()
 
 const app=express()
 const server = http.createServer(app)
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:5173',
-    credentials: true
-  }
-})
+
 
 connectDB();
 
@@ -77,18 +72,7 @@ app.use('/api/staffs',staffRoutes)
 
 app.use('/api/appointments',appointmentRoutes)
 
-app.locals.io = io
 
-io.on('connection', (socket) => {
-  console.log('Socket connected:', socket.id)
-
-  socket.on('register', ({ role, id }) => {
-    if (!role || id == null) return
-    const room = `${role}:${id}`
-    socket.join(room)
-    console.log(`Socket ${socket.id} joined room ${room}`)
-  })
-})
 
 const PORT=process.env.PORT
 

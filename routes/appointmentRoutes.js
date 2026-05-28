@@ -4,7 +4,9 @@ const {
     getAppointmentByPatient,
     getAppointmentByStaff,
     updateAppointmentStatus,
-    advanceToNextAppointment
+    advanceToNextAppointment,
+    streamDoctorQueue,
+    getLiveQueuesSummary
 } = require('../controllers/appointmentController')
 
 const router = express.Router()
@@ -23,5 +25,9 @@ router.put('/status/:id', updateAppointmentStatus)
 
 // Staff advances to the next confirmed patient
 router.put('/next', advanceToNextAppointment)
+
+router.get('/stream/doctor/:doctorId', streamDoctorQueue)
+
+router.get('/live-queues', getLiveQueuesSummary)
 
 module.exports = router
