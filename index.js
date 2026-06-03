@@ -11,6 +11,7 @@ const dotenv=require("dotenv")
 const cookieParser=require('cookie-parser')
 const {protect, authorize}=require('./middlewares/authMiddleware')
 
+dotenv.config()
 
 const hospitalRoutes=require("./routes/hospitalRoutes")
 const doctorRoutes=require("./routes/doctorRoutes")
@@ -27,7 +28,7 @@ const appointmentRoutes=require('./routes/appointmentRoutes')
 const cors=require("cors")
 const connectDB = require("./config/db")
 
-dotenv.config()
+
 
 const app=express()
 const server = http.createServer(app)

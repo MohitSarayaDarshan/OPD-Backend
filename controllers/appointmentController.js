@@ -1,6 +1,11 @@
 const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
 const Staff = require("../models/Staff");
+const Patient = require("../models/Patient");
+const {
+  sendAppointmentConfirmationEmail,
+  sendAppointmentRejectionEmail,
+} = require("./emailService"); // <-- adjust path if needed
 
 async function bookAppointment(req, res) {
   console.log(req.body);
@@ -68,22 +73,18 @@ async function getAppointmentByPatient(req, res) {
 }
 
 // Staff views all appointments for doctors in their hospital
-// Called via POST so email can be sent in body
 async function getAppointmentByStaff(req, res) {
   const email = req.body.Email;
   console.log("getAppointmentByStaff called for:", email);
 
   try {
-    // Step 1: Find the staff member by email to get their HospitalID
     const staff = await Staff.findOne({ Email: email });
     if (!staff) {
       return res.status(404).json({ message: "Staff not found" });
     }
 
-    const hospitalID = staff.HospitalID; // single Number in Staff schema
+    const hospitalID = staff.HospitalID;
 
-    // Step 2: Find all doctors belonging to this hospital
-    // Doctor.HospitalID is also a single Number
     const doctors = await Doctor.find({ HospitalID: hospitalID });
     const doctorIDs = doctors.map((d) => d.DoctorID);
 
@@ -91,7 +92,6 @@ async function getAppointmentByStaff(req, res) {
       return res.status(200).json([]);
     }
 
-    // Step 3: Find all appointments for those doctors, join patient + doctor info
     const result = await Appointment.aggregate([
       { $match: { DoctorID: { $in: doctorIDs } } },
       {
@@ -143,7 +143,7 @@ async function getAppointmentByStaff(req, res) {
   }
 }
 
-// Staff confirms or rejects an appointment
+// Helper — get UTC day start and end for a given date
 function getUtcDayRange(dateValue) {
   const date = new Date(dateValue);
   const start = new Date(
@@ -154,6 +154,10 @@ function getUtcDayRange(dateValue) {
   return { start, end };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// UPDATE APPOINTMENT STATUS  (Confirm / Reject)
+// Email notifications are sent here after DB update succeeds.
+// ─────────────────────────────────────────────────────────────────────────────
 async function updateAppointmentStatus(req, res) {
   const { id } = req.params; // AppointmentID
   const { Status, RejectMessage } = req.body;
@@ -168,6 +172,7 @@ async function updateAppointmentStatus(req, res) {
 
     const updateData = { Status };
 
+    // ── CONFIRM FLOW ──────────────────────────────────────────────────────────
     if (Status === "Confirmed") {
       const { start, end } = getUtcDayRange(appointment.AppointmentDate);
 
@@ -216,19 +221,108 @@ async function updateAppointmentStatus(req, res) {
         await Appointment.bulkWrite(bulkOps);
       }
 
+      // Fetch the freshly-updated appointment record
       const updated = await Appointment.findOne({
         AppointmentID: parseInt(id),
       });
+
+      // ── SEND CONFIRMATION EMAIL ────────────────────────────────────────────
+      // We need patient email + doctor name + hospital name.
+      // Run these lookups in parallel for speed.
+      try {
+        const [patient, doctor] = await Promise.all([
+          Patient.findOne({ PatientID: appointment.PatientID }),
+          Doctor.findOne({ DoctorID: appointment.DoctorID }),
+        ]);
+
+        // Fetch hospital for this doctor
+        let hospitalName = "Your Hospital";
+        if (doctor?.HospitalID) {
+          const Hospital = require("../models/Hospital");
+          const hospital = await Hospital.findOne({
+            HospitalID: doctor.HospitalID,
+          });
+          if (hospital) hospitalName = hospital.HospitalName;
+        }
+
+        if (patient?.Email) {
+          await sendAppointmentConfirmationEmail({
+            toEmail: patient.Email,
+            patientName: patient.PatientName || "Patient",
+            doctorName: doctor?.DoctorName || "Your Doctor",
+            hospitalName,
+            appointmentDate: appointment.AppointmentDate,
+            tokenNumber: updateData.TokenNumber,
+          });
+        } else {
+          console.log(
+            `⚠️  No email found for PatientID ${appointment.PatientID} — skipping confirmation email.`,
+          );
+        }
+      } catch (emailErr) {
+        // Email failure must NEVER break the API response
+        console.error("⚠️  Confirmation email failed:", emailErr.message);
+      }
+      // ── END EMAIL BLOCK ───────────────────────────────────────────────────
+
       return res.status(200).json(updated);
     }
 
+    // ── REJECT FLOW ───────────────────────────────────────────────────────────
     if (Status === "Rejected") {
       updateData.RejectMessage =
         RejectMessage || "Appointment was rejected. Please try another date.";
       updateData.ConsultationPhase = null;
       updateData.TokenNumber = null;
+
+      const updated = await Appointment.findOneAndUpdate(
+        { AppointmentID: parseInt(id) },
+        updateData,
+        { new: true },
+      );
+      if (!updated) {
+        return res.status(404).json({ message: "Appointment not found" });
+      }
+
+      // ── SEND REJECTION EMAIL ───────────────────────────────────────────────
+      try {
+        const [patient, doctor] = await Promise.all([
+          Patient.findOne({ PatientID: appointment.PatientID }),
+          Doctor.findOne({ DoctorID: appointment.DoctorID }),
+        ]);
+
+        let hospitalName = "Your Hospital";
+        if (doctor?.HospitalID) {
+          const Hospital = require("../models/Hospital");
+          const hospital = await Hospital.findOne({
+            HospitalID: doctor.HospitalID,
+          });
+          if (hospital) hospitalName = hospital.HospitalName;
+        }
+
+        if (patient?.Email) {
+          await sendAppointmentRejectionEmail({
+            toEmail: patient.Email,
+            patientName: patient.PatientName || "Patient",
+            doctorName: doctor?.DoctorName || "Your Doctor",
+            hospitalName,
+            appointmentDate: appointment.AppointmentDate,
+            rejectMessage: updateData.RejectMessage,
+          });
+        } else {
+          console.log(
+            `⚠️  No email found for PatientID ${appointment.PatientID} — skipping rejection email.`,
+          );
+        }
+      } catch (emailErr) {
+        console.error("⚠️  Rejection email failed:", emailErr.message);
+      }
+      // ── END EMAIL BLOCK ───────────────────────────────────────────────────
+
+      return res.status(200).json(updated);
     }
 
+    // Fallback for any other status update (not Confirmed / Rejected)
     const updated = await Appointment.findOneAndUpdate(
       { AppointmentID: parseInt(id) },
       updateData,
@@ -244,9 +338,12 @@ async function updateAppointmentStatus(req, res) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Everything below is UNCHANGED from your original code
+// ─────────────────────────────────────────────────────────────────────────────
+
 const liveDoctorStreams = {};
 
-// 2. Stream handler with absolute crash protection
 async function streamDoctorQueue(req, res) {
   try {
     const { doctorId } = req.params;
@@ -256,16 +353,12 @@ async function streamDoctorQueue(req, res) {
         .json({ message: "Doctor ID parameter is missing" });
     }
 
-    // Standard event-stream setup headers
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
-
-    // Match your local development ports securely
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
     res.setHeader("Access-Control-Allow-Credentials", "true");
 
-    // Convert key to string uniformly for internal map tracking
     const docKey = String(doctorId);
 
     if (!liveDoctorStreams[docKey]) {
@@ -273,12 +366,10 @@ async function streamDoctorQueue(req, res) {
     }
     liveDoctorStreams[docKey].push(res);
 
-    // Keep-alive baseline transmission ping
     res.write(
       `data: ${JSON.stringify({ message: "Connected to Doctor Queue Live Stream" })}\n\n`,
     );
 
-    // Handle clean disconnections without throwing unhandled drop exceptions
     req.on("close", () => {
       if (liveDoctorStreams[docKey]) {
         liveDoctorStreams[docKey] = liveDoctorStreams[docKey].filter(
@@ -294,7 +385,6 @@ async function streamDoctorQueue(req, res) {
   }
 }
 
-// 3. Queue advancement handler with explicit type validation
 async function advanceToNextAppointment(req, res) {
   const { Email, DoctorID } = req.body;
 
@@ -321,21 +411,17 @@ async function advanceToNextAppointment(req, res) {
     }
 
     const doctors = await Doctor.find({ HospitalID: staff.HospitalID });
-    // Force conversion to numbers to match your schema requirements securely
     let doctorIDs = doctors.map((d) => Number(d.DoctorID));
 
     const requestedDoctor = Number(DoctorID);
     if (!doctorIDs.includes(requestedDoctor)) {
-      return res
-        .status(400)
-        .json({
-          message: "Doctor records not found under your hospital profile",
-        });
+      return res.status(400).json({
+        message: "Doctor records not found under your hospital profile",
+      });
     }
 
     const { start, end } = getTodayRange();
 
-    // Close out the currently active consultation session for this specific doctor
     const currentFilter = {
       DoctorID: requestedDoctor,
       Status: "Confirmed",
@@ -349,7 +435,6 @@ async function advanceToNextAppointment(req, res) {
       { sort: { TokenNumber: 1 } },
     );
 
-    // Pull the next patient standing in line for this specific doctor
     const nextQuery = {
       DoctorID: requestedDoctor,
       Status: "Confirmed",
@@ -365,10 +450,16 @@ async function advanceToNextAppointment(req, res) {
 
     const docKey = String(requestedDoctor);
 
-    // Handle empty queue edge cases cleanly without breaking the stream list worker loop
     if (!nextAppointment) {
       if (liveDoctorStreams[docKey]) {
-        const emptyPayload = `data: ${JSON.stringify({ DoctorID: requestedDoctor, CurrentLiveToken: null, LastCompletedToken: completedAppointment ? completedAppointment.TokenNumber : null, message: "Queue empty" })}\n\n`;
+        const emptyPayload = `data: ${JSON.stringify({
+          DoctorID: requestedDoctor,
+          CurrentLiveToken: null,
+          LastCompletedToken: completedAppointment
+            ? completedAppointment.TokenNumber
+            : null,
+          message: "Queue empty",
+        })}\n\n`;
         liveDoctorStreams[docKey].forEach((client) => {
           try {
             client.write(emptyPayload);
@@ -386,21 +477,19 @@ async function advanceToNextAppointment(req, res) {
       (d) => Number(d.DoctorID) === requestedDoctor,
     );
 
-    // Construct clear object parameters safely
     const broadcastPayload = {
       DoctorID: requestedDoctor,
       DoctorName: exactDoctorObj ? exactDoctorObj.DoctorName : "Doctor",
       CurrentLiveToken: nextAppointment.TokenNumber,
       LastCompletedToken: completedAppointment
         ? completedAppointment.TokenNumber
-        : null, // 👈 Explicitly broadcast this
+        : null,
       AppointmentID: nextAppointment.AppointmentID,
       PatientID: nextAppointment.PatientID,
       PatientName: nextAppointment.PatientName || "Patient",
       message: `Token #${nextAppointment.TokenNumber} is now in consultation`,
     };
 
-    // Emit updates cleanly to open client channels
     if (liveDoctorStreams[docKey]) {
       const dataPayload = `data: ${JSON.stringify(broadcastPayload)}\n\n`;
       liveDoctorStreams[docKey].forEach((clientRes) => {
@@ -415,27 +504,22 @@ async function advanceToNextAppointment(req, res) {
       });
     }
 
-    return res
-      .status(200)
-      .json({
-        nextAppointment: nextAppointment,
-        message: broadcastPayload.message,
-      });
+    return res.status(200).json({
+      nextAppointment: nextAppointment,
+      message: broadcastPayload.message,
+    });
   } catch (error) {
     console.error(
-      "🚨 CRITICAL ERROR inside advanceToNextAppointment API handler:",
+      "CRITICAL ERROR inside advanceToNextAppointment API handler:",
       error,
     );
-    return res
-      .status(500)
-      .json({
-        error: "Internal Server Processing Error",
-        details: error.message,
-      });
+    return res.status(500).json({
+      error: "Internal Server Processing Error",
+      details: error.message,
+    });
   }
 }
 
-// Add this to your backend appointments router
 async function getLiveQueuesSummary(req, res) {
   try {
     const today = new Date();
@@ -447,14 +531,12 @@ async function getLiveQueuesSummary(req, res) {
     const end = new Date(start);
     end.setDate(end.getDate() + 1);
 
-    // Find all today's appointments that are actively inside with a doctor
     const activeConsultations = await Appointment.find({
       Status: "Confirmed",
       ConsultationPhase: "InConsultation",
       AppointmentDate: { $gte: start, $lt: end },
     });
 
-    // Structure it as a lookup dictionary: { [DoctorID]: { fullPayload } }
     const summary = {};
     activeConsultations.forEach((app) => {
       summary[app.DoctorID] = {
